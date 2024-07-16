@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Pip Boy</title>
+    <!-- Incluir hojas de estilo de Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Estilos CSS personalizados -->
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Evitar barras de desplazamiento */
+            background-color: #213d1e; /* Verde oscuro para el fondo */
+            font-family: 'monospace', monospace; /* Fuente monoespaciada */
+            color: #36fe00; /* Color de texto (#36fe00) */
+            position: relative; /* Necesario para posicionar correctamente el bloc de notas */
+        }
+        #map {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1080px; /* Ancho de la imagen */
+            height: 1080px; /* Alto de la imagen */
+            background-color: #fff; /* Color de fondo opcional */
+        }
+        .note {
+            position: absolute;
+            right: 20px; /* Ajusta la posición desde el borde derecho */
+            bottom: 20px; /* Ajusta la posición desde el borde inferior */
+            background-color: #1c6608; /* Color de fondo (#1c6608) */
+            padding: 20px;
+            border: 2px solid #355e30; /* Verde más oscuro para el borde */
+            border-radius: 10px;
+            width: 300px; /* Ancho del bloc de notas */
+            padding-bottom: 40px; /* Espacio adicional para el contenido editable */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+            z-index: 1000; /* Asegura que esté por encima del mapa */
+            overflow: auto; /* Añadir barra de desplazamiento si el contenido es largo */
+            color: #36fe00; /* Color de texto (#36fe00) */
+        }
+        .pipboy-info {
+            position: absolute;
+            left: 20px; /* Ajusta la posición desde el borde izquierdo */
+            top: 20px; /* Ajusta la posición desde el borde superior */
+            font-size: 1em; /* Tamaño de fuente */
+            padding: 10px; /* Añadir relleno */
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente */
+            border-radius: 5px;
+        }
+        .pipboy-info span {
+            font-weight: bold;
+        }
+        .clock {
+            position: absolute;
+            top: 50px; /* Ajusta la posición desde el borde superior */
+            right: 20px; /* Ajusta la posición desde el borde derecho */
+            font-size: 1.5em; /* Tamaño de fuente más grande */
+            text-align: right;
+            padding: 15px; /* Añadir relleno para el fondo */
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente */
+            border-radius: 5px;
+        }
+        .ip-info {
+            position: absolute;
+            top: 120px; /* Ajusta la posición debajo del reloj */
+            right: 20px; /* Ajusta la posición desde el borde derecho */
+            font-size: 1.2em; /* Tamaño de fuente más grande */
+            text-align: right;
+            padding: 15px; /* Añadir relleno para el fondo */
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente */
+            border-radius: 5px;
+        }
+        .version-info {
+            position: absolute;
+            top: 190px; /* Ajusta la posición debajo de la IP */
+            right: 20px; /* Ajusta la posición desde el borde derecho */
+            font-size: 1.2em; /* Tamaño de fuente más grande */
+            text-align: right;
+            padding: 15px; /* Añadir relleno para el fondo */
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente */
+            border-radius: 5px;
+        }
+        .download-button {
+            position: absolute;
+            top: 260px; /* Ajusta la posición debajo de la versión */
+            right: 20px; /* Ajusta la posición desde el borde derecho */
+            padding: 15px 30px; /* Ajusta el tamaño del botón */
+            font-size: 1.2em; /* Tamaño de fuente más grande */
+            background-color: #1c6608; /* Color de fondo (#1c6608) */
+            color: #36fe00; /* Color de texto (#36fe00) */
+            border: 2px solid #355e30; /* Borde */
+            border-radius: 5px;
+            text-decoration: none; /* Quita el subrayado del enlace */
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave */
+        }
+        .download-button:hover {
+            background-color: #36fe00; /* Color de fondo al pasar el ratón */
+            color: #1c6608; /* Color de texto al pasar el ratón */
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor del mapa -->
+    <div id="map"></div>
+    
+    <!-- Texto "Lucky Pip Boy / v.1.0 - Cortesía de La Mafia" -->
+    <div class="pipboy-info">
+        <span>Lucky Pip Boy / v.1.0</span> - Cortesía de La Mafia
+    </div>
+
+    <!-- Bloc de notas -->
+    <div class="note">
+        <div class="note-header">Notas</div>
+        <div class="note-content" contenteditable="true">
+            <p>Aquí puedes escribir tus notas adicionales. Este bloc de notas ahora es editable directamente en la página.</p>
+        </div>
+    </div>
+
+    <!-- Reloj en tiempo real -->
+    <div class="clock" id="clock"></div>
+
+    <!-- Información de IP -->
+    <div class="ip-info">
+        IP: hours-brooks.gl.joinmc.link
+    </div>
+
+    <!-- Información de la versión -->
+    <div class="version-info">
+        Version: 1.18.2
+    </div>
+
+    <!-- Botón de Descargar Mods -->
+    <a href="https://tu-enlace-de-descarga-aqui" class="download-button">Descargar Mods</a>
+
+    <!-- Incluir scripts de Leaflet y tu script personalizado -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+    <!-- Script para el reloj -->
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const dayOfWeek = now.toLocaleDateString('es-ES', { weekday: 'long' });
+            const dayOfMonth = now.toLocaleDateString('es-ES', { day: 'numeric' });
+            const month = now.toLocaleDateString('es-ES', { month: 'long' });
+            const year = now.getFullYear();
+            const timeStr = now.toLocaleTimeString('es-ES', {
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric'
+            });
+            document.getElementById('clock').innerHTML = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} ${dayOfMonth} de ${month.charAt(0).toUpperCase() + month.slice(1)} - ${timeStr}`;
+        }
+        
+        // Actualizar cada segundo
+        setInterval(updateTime, 1000);
+
+        // Llamar a la función inicialmente para evitar el retraso de un segundo
+        updateTime();
+    </script>
+</body>
+</html>
